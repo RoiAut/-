@@ -1,27 +1,46 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - 1rem)); }
+}
+
+@keyframes marquee-reverse {
+  0% { transform: translateX(calc(-50% - 1rem)); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee {
+  animation: marquee 1500s linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 1500s linear infinite;
+}
+
+.animate-marquee:hover, .animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Playfair Display", serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  
+  --color-sand-50: #fdfdfc;
+  --color-sand-100: #f8f7f5;
+  --color-sand-200: #ecebe6;
+  --color-sand-300: #dedbd3;
+  --color-sand-400: #cbc5ba;
+  --color-sand-500: #b4aba0;
+  --color-sand-600: #9c9183;
+  --color-sand-700: #83786c;
+  --color-sand-800: #6a6258;
+  --color-sand-900: #554f48;
 
-  --color-chocolate-dark: #2c1810;
-  --color-chocolate-medium: #4b3621;
-  --color-chocolate-light: #7b3f00;
-  --color-chocolate-cream: #faf7f2;
-  --color-chocolate-gold: #bc9c63;
-}
-
-@layer base {
-  body {
-    @apply bg-chocolate-cream text-chocolate-dark font-sans antialiased;
-  }
-}
-
-.title-serif {
-  @apply font-display italic;
-}
-
-.glass-morphism {
-  @apply bg-white/10 backdrop-blur-md border border-white/20;
+  --color-accent: #7d5e46; /* A warm tone like 🤎 */
 }
