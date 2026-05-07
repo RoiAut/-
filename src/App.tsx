@@ -6,30 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Phone, Instagram, CheckCircle2, ChevronRight, Star, Quote, ArrowUp } from 'lucide-react';
-
-const REVIEWS = [
-  {
-    id: 1,
-    author: "Елена С.",
-    date: "12 октября 2025",
-    text: "Отмечали свадьбу в банкетном зале «История». Все прошло на высшем уровне! Очень стильный интерьер, высокие потолки создают ощущение простора. Отдельное спасибо за вкусное меню и внимание к каждой детали.",
-    rating: 5,
-  },
-  {
-    id: 2,
-    author: "Михаил В.",
-    date: "4 сентября 2025",
-    text: "Прекрасное место! Праздновали юбилей, гости остались в восторге. Очень удобно, что есть просторная парковка и уютная детская комната. Сервис на 5 звезд.",
-    rating: 5,
-  },
-  {
-    id: 3,
-    author: "Анна Д.",
-    date: "20 августа 2025",
-    text: "Спасибо команде зала «История» за наш идеальный праздник. Зал очень красивый, даже не требовалось дополнительного декора. Еда превосходная, подача блюд ресторанного уровня.",
-    rating: 5,
-  }
-];
+import { REVIEWS } from './data/reviews';
 
 export default function App() {
   const [scrolled, setScrolled] = useState(false);
@@ -76,6 +53,21 @@ export default function App() {
             <a href="#features" className="text-sm font-medium text-sand-700 hover:text-accent transition-colors">Преимущества</a>
             <a href="#reviews" className="text-sm font-medium text-sand-700 hover:text-accent transition-colors">Отзывы</a>
             <a href="#contacts" className="text-sm font-medium text-sand-700 hover:text-accent transition-colors">Контакты</a>
+            
+            <div className="flex items-center gap-5 pl-8 border-l border-sand-200/50">
+              <a href="https://instagram.com/istoriya_zal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sand-700 hover:text-accent transition-all group">
+                <div className="w-8 h-8 rounded-full bg-sand-100 flex items-center justify-center group-hover:bg-accent/10 transition-colors shadow-sm">
+                  <Instagram className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium">Instagram</span>
+              </a>
+              <a href="https://vk.com/istoriya_zal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sand-700 hover:text-accent transition-all group">
+                <div className="w-8 h-8 rounded-full bg-sand-100 flex items-center justify-center group-hover:bg-accent/10 transition-colors shadow-sm">
+                  <span className="font-bold font-serif text-[11px] leading-none">VK</span>
+                </div>
+                <span className="text-sm font-medium">ВКонтакте</span>
+              </a>
+            </div>
           </div>
         </div>
       </nav>
@@ -111,15 +103,6 @@ export default function App() {
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="inline-block mb-4 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 backdrop-blur-sm"
-          >
-            <span className="text-xs font-semibold tracking-wider uppercase text-accent">Магнитогорск</span>
-          </motion.div>
-          
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -187,21 +170,20 @@ export default function App() {
             </div>
             
             <div className="relative">
-              <div className="aspect-[4/5] sm:aspect-square bg-white rounded-2xl overflow-hidden relative border border-sand-200 p-8 flex flex-col items-center justify-between shadow-sm">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-sand-300/20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3"></div>
+              <div className="aspect-[4/5] sm:aspect-square bg-white rounded-3xl overflow-hidden relative border border-sand-200 p-10 flex flex-col items-center justify-center shadow-lg text-center shadow-sand-300/20 group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000"></div>
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-sand-300/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3 group-hover:scale-110 transition-transform duration-1000"></div>
                 
-                <div className="relative z-10 w-full flex-grow flex items-center justify-center p-4">
-                  <img src="/logoo.jpg" alt="История Лого" className="w-full max-w-[280px] object-contain opacity-95 mix-blend-multiply drop-shadow-sm" />
-                </div>
-                
-                <div className="relative z-10 w-full mt-6 text-center">
-                  <Quote className="w-6 h-6 text-accent/30 mx-auto mb-3" />
-                  <p className="text-xl font-serif text-sand-900 leading-snug mb-5">
-                    "Место, где рождаются лучшие воспоминания."
+                <Quote className="absolute top-10 left-10 w-16 h-16 text-accent/10 -rotate-12" />
+                <Quote className="absolute bottom-16 right-10 w-24 h-24 text-accent/5 rotate-180" />
+
+                <div className="relative z-10 flex flex-col items-center justify-center h-full">
+                  <p className="text-3xl sm:text-4xl lg:text-5xl font-serif text-sand-900 leading-tight mb-8">
+                    «Место, где рождаются лучшие<br/>воспоминания»
                   </p>
-                  <a href="https://yandex.ru/maps/org/istoriya/211532867610/?ll=58.978542%2C53.350369&z=17" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm font-medium text-accent hover:text-sand-900 transition-colors">
-                    Посмотреть на карте <ChevronRight className="w-4 h-4 ml-1" />
+                  <div className="h-px w-16 bg-accent/30 mb-8"></div>
+                  <a href="https://yandex.ru/maps/org/istoriya/211532867610/?ll=58.978542%2C53.350369&z=17" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm font-semibold text-accent hover:text-sand-900 transition-colors tracking-widest uppercase">
+                    Посмотреть на карте <ChevronRight className="w-4 h-4 ml-2" />
                   </a>
                 </div>
               </div>
@@ -212,9 +194,9 @@ export default function App() {
       </section>
 
       {/* Reviews Section */}
-      <section id="reviews" className="py-24 bg-sand-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+      <section id="reviews" className="py-24 bg-sand-50 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+          <div className="text-center max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-serif font-medium text-sand-900 mb-4">
               Отзывы наших гостей
             </h2>
@@ -222,26 +204,52 @@ export default function App() {
               Каждое мероприятие — это новая история. Мы гордимся тем, что вы доверяете нам свои самые важные дни.
             </p>
           </div>
+        </div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {REVIEWS.map((review) => (
-              <div key={review.id} className="bg-white p-8 rounded-2xl shadow-sm border border-sand-100 flex flex-col">
+        <div className="flex flex-col gap-6 relative">
+          {/* Overlay Gradients */}
+          <div className="absolute inset-y-0 left-0 w-12 md:w-32 bg-gradient-to-r from-sand-50 to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute inset-y-0 right-0 w-12 md:w-32 bg-gradient-to-l from-sand-50 to-transparent z-10 pointer-events-none"></div>
+
+          {/* First Row */}
+          <div className="flex animate-marquee w-max gap-6 hover:paused pl-6">
+            {REVIEWS.map((review, idx) => (
+              <div key={`row1-${idx}`} className="w-[300px] md:w-[400px] shrink-0 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-sand-100 flex flex-col">
                 <div className="flex items-center gap-1 mb-4">
-                  {[...Array(review.rating)].map((_, i) => (
+                  {[...Array(review.stars)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-accent text-accent" />
                   ))}
                 </div>
-                <p className="text-sand-800 mb-6 flex-grow leading-relaxed">
+                <p className="text-sand-800 mb-6 flex-grow leading-relaxed line-clamp-4">
                   "{review.text}"
                 </p>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="font-semibold text-sand-900">{review.author}</span>
+                  <span className="font-semibold text-sand-900">{review.name}</span>
+                  <span className="text-sand-500">{review.date}</span>
+                </div>
+              </div>
+            ))}
+            {/* Duplicate for infinite effect */}
+            {REVIEWS.map((review, idx) => (
+              <div key={`row1-dup-${idx}`} className="w-[300px] md:w-[400px] shrink-0 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-sand-100 flex flex-col">
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(review.stars)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-accent text-accent" />
+                  ))}
+                </div>
+                <p className="text-sand-800 mb-6 flex-grow leading-relaxed line-clamp-4">
+                  "{review.text}"
+                </p>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-semibold text-sand-900">{review.name}</span>
                   <span className="text-sand-500">{review.date}</span>
                 </div>
               </div>
             ))}
           </div>
+        </div>
           
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mt-12 text-center">
             <a href="https://yandex.ru/maps/org/istoriya/211532867610/reviews/?ll=58.978542%2C53.350369&z=17" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-sand-900 bg-transparent border border-sand-300 rounded-full hover:border-sand-900 transition-all">
               Читать все отзывы на Яндекс Картах
