@@ -34,6 +34,9 @@ const REVIEWS = [
 export default function App() {
   const [scrolled, setScrolled] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [currentImageIdx, setCurrentImageIdx] = useState(0);
+
+  const heroImages = ['/bank1.jpg', '/bank2.jpg', '/bank3.jpg'];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,8 +44,16 @@ export default function App() {
       setShowScrollTop(window.scrollY > 400);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    
+    const timer = setInterval(() => {
+      setCurrentImageIdx((prev) => (prev + 1) % heroImages.length);
+    }, 4000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(timer);
+    };
+  }, [heroImages.length]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -71,10 +82,32 @@ export default function App() {
 
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center pt-24 overflow-hidden bg-sand-100">
-        <div className="absolute inset-0 z-0">
-           {/* Abstract warm background placeholder */}
-           <div className="absolute inset-0 bg-gradient-to-br from-sand-100 to-sand-200"></div>
-           <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/5 blur-3xl transform skew-x-12"></div>
+        <div className="absolute inset-0 z-0 overflow-hidden bg-sand-100">
+           <AnimatePresence mode="wait">
+             <motion.img
+               key={`hero-${currentImageIdx}`}
+               src={heroImages[currentImageIdx]}
+               initial={{ opacity: 0, scale: 1.05 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0 }}
+               transition={{ duration: 1.5, ease: "easeInOut" }}
+               className="absolute inset-0 w-full h-full object-cover"
+             />
+           </AnimatePresence>
+           {/* Center Mask Overlay so text is readable */}
+           <div 
+             className="absolute inset-0 hidden sm:block"
+             style={{
+               background: 'linear-gradient(to right, transparent 0%, var(--color-sand-100) 15%, var(--color-sand-100) 85%, transparent 100%)'
+             }}
+           ></div>
+           
+           <div 
+             className="absolute inset-0 sm:hidden"
+             style={{
+               background: 'linear-gradient(to top, transparent 0%, var(--color-sand-100) 25%, var(--color-sand-100) 80%, transparent 100%)'
+             }}
+           ></div>
         </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
