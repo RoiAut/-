@@ -1,331 +1,512 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  Utensils,
+  Home,
+  Gift,
+  Camera,
+  CreditCard,
+  ShoppingBag,
+  MapPin,
+  Phone,
+  MessageCircle,
+  ChevronRight,
+  ChevronLeft,
+  Infinity as InfinityIcon,
+  X,
+  ArrowUp,
+} from "lucide-react";
+import { CONTACT_INFO, FEATURES, IMAGES } from "./constants";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Phone, Instagram, CheckCircle2, ChevronRight, Star, Quote, ArrowUp } from 'lucide-react';
-import { REVIEWS } from './data/reviews';
+const ICON_MAP = {
+  Utensils,
+  Home,
+  Gift,
+  Camera,
+  CreditCard,
+  ShoppingBag,
+};
+
+const ImageWithFallback = ({
+  src,
+  fallback,
+  alt,
+  className,
+  onClick,
+  loading = "lazy",
+}: {
+  src: string;
+  fallback: string;
+  alt: string;
+  className?: string;
+  onClick?: () => void;
+  loading?: "lazy" | "eager";
+}) => (
+  <img
+    src={src}
+    alt={alt}
+    className={className}
+    onClick={onClick}
+    loading={loading}
+    onError={(e) => {
+      (e.target as HTMLImageElement).src = fallback;
+    }}
+  />
+);
 
 export default function App() {
-  const [scrolled, setScrolled] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [currentImageIdx, setCurrentImageIdx] = useState(0);
-
-  const heroImages = ['/bank1.jpg', '/bank2.jpg', '/bank3.jpg'];
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-      setShowScrollTop(window.scrollY > 400);
-    };
-    window.addEventListener('scroll', handleScroll);
-    
-    const timer = setInterval(() => {
-      setCurrentImageIdx((prev) => (prev + 1) % heroImages.length);
-    }, 4000);
+    const handleScroll = () => setShowScrollTop(window.scrollY > 300);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearInterval(timer);
-    };
-  }, [heroImages.length]);
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const galleryImages = [
+    { src: IMAGES.gallery[0], fallback: IMAGES.fallbacks.gallery[0] },
+    { src: IMAGES.gallery[1], fallback: IMAGES.fallbacks.gallery[1] },
+    { src: IMAGES.gallery[2], fallback: IMAGES.fallbacks.gallery[2] },
+    { src: IMAGES.promo, fallback: IMAGES.fallbacks.promo },
+  ];
+
+  const handleNext = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      if (selectedIndex !== null) {
+        setSelectedIndex((selectedIndex + 1) % galleryImages.length);
+      }
+    },
+    [selectedIndex, galleryImages.length],
+  );
+
+  const handlePrev = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      if (selectedIndex !== null) {
+        setSelectedIndex((selectedIndex - 1 + galleryImages.length) % galleryImages.length);
+      }
+    },
+    [selectedIndex, galleryImages.length],
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedIndex === null) return;
+      if (e.key === "ArrowRight") handleNext();
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "Escape") setSelectedIndex(null);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedIndex, handleNext, handlePrev]);
+
+  const selectedImage = selectedIndex !== null ? galleryImages[selectedIndex] : null;
 
   return (
-    <div className="min-h-screen bg-sand-50 font-sans text-sand-900 selection:bg-accent selection:text-white flex flex-col">
-      
+    <div className="min-h-screen selection:bg-chocolate-light selection:text-white">
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedIndex(null)}
+            className="fixed inset-0 z-[100] bg-chocolate-dark/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 cursor-zoom-out"
+          >
+            <motion.button
+              initial={{ scale: 0, rotate: -90 }}
+              animate={{ scale: 1, rotate: 0 }}
+              className="absolute top-6 right-6 text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors z-[110]"
+              onClick={() => setSelectedIndex(null)}
+            >
+              <X size={32} />
+            </motion.button>
+
+            <button
+              onClick={handlePrev}
+              className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-4 rounded-full transition-colors z-[110] cursor-pointer"
+            >
+              <ChevronLeft size={40} />
+            </button>
+
+            <button
+              onClick={handleNext}
+              className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white bg-white/10 hover:bg-white/20 p-4 rounded-full transition-colors z-[110] cursor-pointer"
+            >
+              <ChevronRight size={40} />
+            </button>
+
+            <motion.div
+              key={selectedIndex}
+              initial={{ scale: 0.9, opacity: 0, x: 20 }}
+              animate={{ scale: 1, opacity: 1, x: 0 }}
+              exit={{ scale: 0.9, opacity: 0, x: -20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative max-w-5xl w-full h-full flex flex-col items-center justify-center gap-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ImageWithFallback
+                src={selectedImage.src}
+                fallback={selectedImage.fallback}
+                alt="Просмотр фото"
+                className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl pointer-events-none"
+              />
+              <div className="text-white/40 font-display text-sm tracking-widest uppercase">
+                {selectedIndex! + 1} / {galleryImages.length}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            {/* If user uploaded the logo to standard path, we try to use it here. Otherwise fallback to text */}
-            <img src="/logoo.jpg" alt="История" className="h-10 w-auto object-contain rounded" onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }} />
-            <span className="font-serif text-2xl font-semibold tracking-wide text-sand-900">История</span>
-          </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-sm font-medium text-sand-700 hover:text-accent transition-colors">Преимущества</a>
-            <a href="#reviews" className="text-sm font-medium text-sand-700 hover:text-accent transition-colors">Отзывы</a>
-            <a href="#contacts" className="text-sm font-medium text-sand-700 hover:text-accent transition-colors">Контакты</a>
-            
-            <div className="flex items-center gap-5 pl-8 border-l border-sand-200/50">
-              <a href="https://instagram.com/istoriya_zal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sand-700 hover:text-accent transition-all group">
-                <div className="w-8 h-8 rounded-full bg-sand-100 flex items-center justify-center group-hover:bg-accent/10 transition-colors shadow-sm">
-                  <Instagram className="w-4 h-4" />
-                </div>
-                <span className="text-sm font-medium">Instagram</span>
-              </a>
-              <a href="https://vk.com/istoriya_zal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sand-700 hover:text-accent transition-all group">
-                <div className="w-8 h-8 rounded-full bg-sand-100 flex items-center justify-center group-hover:bg-accent/10 transition-colors shadow-sm">
-                  <span className="font-bold font-serif text-[11px] leading-none">VK</span>
-                </div>
-                <span className="text-sm font-medium">ВКонтакте</span>
-              </a>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-chocolate-cream/80 backdrop-blur-md border-b border-chocolate-dark/5">
+        <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="font-display text-2xl font-bold tracking-tighter text-chocolate-dark leading-none">
+                ШОКОЛАД
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-chocolate-light font-bold">
+                Банкетный зал
+              </span>
             </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <a
+              href={`tel:${CONTACT_INFO.phone.replace(/[^+\d]/g, "")}`}
+              className="text-sm font-bold text-chocolate-dark border-r border-chocolate-dark/10 pr-6 hidden lg:flex items-center gap-2 hover:text-chocolate-light transition-colors"
+            >
+              <Phone size={16} />
+              {CONTACT_INFO.phone}
+            </a>
+            <a
+              href={CONTACT_INFO.mapLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium hover:text-chocolate-light transition-colors hidden md:flex items-center gap-2"
+            >
+              <MapPin size={16} />
+              {CONTACT_INFO.address}
+            </a>
+            <a
+              href={CONTACT_INFO.vkLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-chocolate-dark text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-chocolate-medium transition-all shadow-lg shadow-chocolate-dark/20 flex items-center gap-2"
+            >
+              <MessageCircle size={18} />
+              Группа ВК
+            </a>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center pt-24 overflow-hidden bg-sand-100">
-        <div className="absolute inset-0 z-0 overflow-hidden bg-sand-100">
-           <AnimatePresence mode="wait">
-             <motion.img
-               key={`hero-${currentImageIdx}`}
-               src={heroImages[currentImageIdx]}
-               initial={{ opacity: 0, scale: 1.05 }}
-               animate={{ opacity: 1, scale: 1 }}
-               exit={{ opacity: 0 }}
-               transition={{ duration: 1.5, ease: "easeInOut" }}
-               className="absolute inset-0 w-full h-full object-cover"
-             />
-           </AnimatePresence>
-           {/* Center Mask Overlay so text is readable */}
-           <div 
-             className="absolute inset-0 hidden sm:block"
-             style={{
-               background: 'linear-gradient(to right, transparent 0%, var(--color-sand-100) 15%, var(--color-sand-100) 85%, transparent 100%)'
-             }}
-           ></div>
-           
-           <div 
-             className="absolute inset-0 sm:hidden"
-             style={{
-               background: 'linear-gradient(to top, transparent 0%, var(--color-sand-100) 25%, var(--color-sand-100) 80%, transparent 100%)'
-             }}
-           ></div>
+      {/* Hero */}
+      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full -z-10 opacity-10">
+          <InfinityIcon className="w-full h-full text-chocolate-light" strokeWidth={0.5} />
         </div>
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-5xl sm:text-6xl md:text-7xl font-serif font-medium text-sand-900 mb-6 max-w-4xl tracking-tight leading-tight"
-          >
-            Зал торжеств <br/><span className="text-accent italic">«История»</span>
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg sm:text-xl text-sand-700 max-w-2xl mx-auto mb-10 leading-relaxed"
-          >
-            Абсолютно новое и стильное пространство, созданное с любовью для Ваших уникальных событий!
-          </motion.p>
-          
+
+        <div className="max-w-7xl mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center gap-4"
+            transition={{ duration: 0.6 }}
           >
-            <a href="tel:+79048020590" className="inline-flex items-center justify-center px-8 py-4 text-sm font-medium text-white bg-accent rounded-full hover:bg-accent/90 transition-all active:scale-95 shadow-lg shadow-accent/20">
-              Забронировать дату
-            </a>
-            <a href="https://vk.com/istoriya_zal" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-8 py-4 text-sm font-medium text-sand-900 bg-white border border-sand-200 rounded-full hover:border-accent hover:text-accent transition-all active:scale-95">
-              Мы ВКонтакте
-            </a>
+            <span className="inline-block px-4 py-1.5 bg-chocolate-dark/5 rounded-full text-chocolate-light text-sm font-bold tracking-wider uppercase mb-6">
+              Уютный банкетный зал в Магнитогорске
+            </span>
+            <h1 className="font-display text-5xl md:text-8xl font-bold text-chocolate-dark leading-[0.9] mb-8">
+              Ваше идеальное <br className="hidden md:block" />
+              <span className="text-chocolate-light italic">торжество начинается здесь</span>
+            </h1>
+            <p className="max-w-2xl mx-auto text-lg md:text-xl text-chocolate-medium/80 mb-10 leading-relaxed">
+              Мы создаем атмосферу, в которой каждый гость чувствует себя особенным. Доверьте нам
+              организацию вашего торжества.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a
+                href={CONTACT_INFO.mapLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-8 py-4 bg-chocolate-dark text-white rounded-2xl font-bold text-lg hover:bg-chocolate-medium transition-all shadow-xl shadow-chocolate-dark/30 flex items-center justify-center gap-2"
+              >
+                Найти на карте
+                <ChevronRight size={20} />
+              </a>
+              <a
+                href={CONTACT_INFO.vkLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-8 py-4 bg-white border-2 border-chocolate-dark/10 text-chocolate-dark rounded-2xl font-bold text-lg hover:bg-chocolate-cream transition-all flex items-center justify-center gap-2"
+              >
+                Связаться в ВК
+              </a>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-24 bg-white relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            
-            <div>
-              <h2 className="text-3xl md:text-4xl font-serif font-medium text-sand-900 mb-6">
-                Всё для Вашего комфорта
-              </h2>
-              <p className="text-sand-700 mb-8 leading-relaxed text-lg">
-                Наше меню разнообразно и подойдет на любой вкус. Мы работаем индивидуально с каждым гостем и учтем все Ваши пожелания. Ждем Вас для создания незабываемых историй 🤎
-              </p>
-              
-              <div className="grid sm:grid-cols-2 gap-y-4 gap-x-8">
-                {[
-                  "Вместимость до 140 персон",
-                  "Просторная гардеробная",
-                  "Уютный холл",
-                  "Детская комната",
-                  "Гримерка для ведущих",
-                  "Высокие потолки",
-                  "Большая зона парковки",
-                  "Индивидуальное меню"
-                ].map((feature, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
-                    <span className="text-sand-800 font-medium">{feature}</span>
-                  </div>
-                ))}
-              </div>
+      {/* Stats */}
+      <section className="bg-chocolate-dark text-chocolate-cream py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            <div className="space-y-2">
+              <div className="text-4xl font-display italic font-bold">100%</div>
+              <div className="text-sm uppercase tracking-widest opacity-60">Душевная атмосфера</div>
             </div>
-            
-            <div className="relative">
-              <div className="aspect-[4/5] sm:aspect-square bg-white rounded-3xl overflow-hidden relative border border-sand-200 p-10 flex flex-col items-center justify-center shadow-lg text-center shadow-sand-300/20 group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 group-hover:scale-110 transition-transform duration-1000"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-sand-300/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3 group-hover:scale-110 transition-transform duration-1000"></div>
-                
-                <Quote className="absolute top-10 left-10 w-16 h-16 text-accent/10 -rotate-12" />
-                <Quote className="absolute bottom-16 right-10 w-24 h-24 text-accent/5 rotate-180" />
-
-                <div className="relative z-10 flex flex-col items-center justify-center h-full">
-                  <p className="text-3xl sm:text-4xl lg:text-5xl font-serif text-sand-900 leading-tight mb-8">
-                    «Место, где рождаются лучшие<br/>воспоминания»
-                  </p>
-                  <div className="h-px w-16 bg-accent/30 mb-8"></div>
-                  <a href="https://yandex.ru/maps/org/istoriya/211532867610/?ll=58.978542%2C53.350369&z=17" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm font-semibold text-accent hover:text-sand-900 transition-colors tracking-widest uppercase">
-                    Посмотреть на карте <ChevronRight className="w-4 h-4 ml-2" />
-                  </a>
-                </div>
-              </div>
+            <div className="space-y-2">
+              <div className="text-4xl font-display italic font-bold">Вкусная</div>
+              <div className="text-sm uppercase tracking-widest opacity-60">Домашняя кухня</div>
             </div>
-            
+            <div className="space-y-2">
+              <div className="text-4xl font-display italic font-bold">Подарок</div>
+              <div className="text-sm uppercase tracking-widest opacity-60">Украшение зала</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Reviews Section */}
-      <section id="reviews" className="py-24 bg-sand-50 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-serif font-medium text-sand-900 mb-4">
-              Отзывы наших гостей
+      {/* Features */}
+      <section className="py-24 md:py-32">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-20">
+            <h2 className="font-display text-4xl md:text-6xl font-bold text-chocolate-dark mb-6 italic">
+              Почему выбирают нас
             </h2>
-            <p className="text-sand-700">
-              Каждое мероприятие — это новая история. Мы гордимся тем, что вы доверяете нам свои самые важные дни.
-            </p>
+            <div className="w-24 h-1 bg-chocolate-light mx-auto rounded-full"></div>
           </div>
-        </div>
-          
-        <div className="flex flex-col gap-6 relative">
-          {/* Overlay Gradients */}
-          <div className="absolute inset-y-0 left-0 w-12 md:w-32 bg-gradient-to-r from-sand-50 to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute inset-y-0 right-0 w-12 md:w-32 bg-gradient-to-l from-sand-50 to-transparent z-10 pointer-events-none"></div>
 
-          {/* First Row */}
-          <div className="flex animate-marquee w-max gap-6 hover:paused pl-6">
-            {REVIEWS.map((review, idx) => (
-              <div key={`row1-${idx}`} className="w-[300px] md:w-[400px] shrink-0 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-sand-100 flex flex-col">
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(review.stars)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                  ))}
-                </div>
-                <p className="text-sand-800 mb-6 flex-grow leading-relaxed line-clamp-4">
-                  "{review.text}"
-                </p>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="font-semibold text-sand-900">{review.name}</span>
-                  <span className="text-sand-500">{review.date}</span>
-                </div>
-              </div>
-            ))}
-            {/* Duplicate for infinite effect */}
-            {REVIEWS.map((review, idx) => (
-              <div key={`row1-dup-${idx}`} className="w-[300px] md:w-[400px] shrink-0 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-sand-100 flex flex-col">
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(review.stars)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-accent text-accent" />
-                  ))}
-                </div>
-                <p className="text-sand-800 mb-6 flex-grow leading-relaxed line-clamp-4">
-                  "{review.text}"
-                </p>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="font-semibold text-sand-900">{review.name}</span>
-                  <span className="text-sand-500">{review.date}</span>
-                </div>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {FEATURES.map((feature, idx) => {
+              const Icon = ICON_MAP[feature.icon as keyof typeof ICON_MAP];
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className="group bg-white p-10 rounded-[40px] border border-chocolate-dark/5 hover:border-chocolate-light/20 hover:shadow-2xl hover:shadow-chocolate-dark/5 transition-all"
+                >
+                  <div className="w-16 h-16 bg-chocolate-cream rounded-2xl flex items-center justify-center text-chocolate-light mb-8 group-hover:scale-110 transition-transform">
+                    {Icon && <Icon size={32} />}
+                  </div>
+                  <h3 className="text-2xl font-bold text-chocolate-dark mb-4">{feature.title}</h3>
+                  <p className="text-chocolate-medium/70 leading-relaxed">{feature.description}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
-          
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mt-12 text-center">
-            <a href="https://yandex.ru/maps/org/istoriya/211532867610/reviews/?ll=58.978542%2C53.350369&z=17" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-sand-900 bg-transparent border border-sand-300 rounded-full hover:border-sand-900 transition-all">
-              Читать все отзывы на Яндекс Картах
+      </section>
+
+      {/* Promo */}
+      <section className="py-24 bg-chocolate-medium text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-chocolate-light opacity-10 skew-x-12 translate-x-1/2"></div>
+        <div className="max-w-7xl mx-auto px-4 relative">
+          <div className="flex flex-col md:flex-row items-center gap-16">
+            <div className="flex-1 space-y-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-sm font-bold uppercase tracking-wider backdrop-blur-sm">
+                <Gift size={16} />
+                Эксклюзивно для вас
+              </div>
+              <h2 className="font-display text-4xl md:text-7xl font-bold leading-tight">
+                Оформление зала <br />
+                <span className="text-chocolate-gold italic">в подарок</span>
+              </h2>
+              <p className="text-xl opacity-80 leading-relaxed max-w-lg">
+                Станьте подписчиком нашей группы ВКонтакте и получите качественное, стильное
+                оформление банкетного зала совершенно бесплатно. Пусть ваш праздник будет идеальным
+                до мельчайших деталей!
+              </p>
+              <a
+                href={CONTACT_INFO.vkLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-chocolate-dark rounded-2xl font-bold text-lg hover:bg-chocolate-cream transition-all shadow-2xl"
+              >
+                Вступить в группу
+                <ChevronRight size={20} />
+              </a>
+            </div>
+            <div className="flex-1 w-full aspect-square md:aspect-auto md:h-[600px] rounded-[60px] overflow-hidden shadow-2xl shadow-black/50 rotate-3">
+              <ImageWithFallback
+                src={IMAGES.promo}
+                fallback={IMAGES.fallbacks.promo}
+                alt="Оформленный банкетный зал"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery */}
+      <section className="py-32 bg-chocolate-cream">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:h-[600px]">
+            <div
+              className="md:col-span-2 row-span-2 rounded-[40px] overflow-hidden shadow-lg group cursor-zoom-in min-h-[300px] md:min-h-0"
+              onClick={() => setSelectedIndex(0)}
+            >
+              <ImageWithFallback
+                src={IMAGES.gallery[0]}
+                fallback={IMAGES.fallbacks.gallery[0]}
+                alt="Банкетное блюдо"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+            </div>
+            <div
+              className="rounded-[40px] overflow-hidden shadow-lg group cursor-zoom-in h-64 md:h-full"
+              onClick={() => setSelectedIndex(1)}
+            >
+              <ImageWithFallback
+                src={IMAGES.gallery[1]}
+                fallback={IMAGES.fallbacks.gallery[1]}
+                alt="Декор зала"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+            </div>
+            <div
+              className="rounded-[40px] overflow-hidden shadow-lg group cursor-zoom-in h-64 md:h-full"
+              onClick={() => setSelectedIndex(2)}
+            >
+              <ImageWithFallback
+                src={IMAGES.gallery[2]}
+                fallback={IMAGES.fallbacks.gallery[2]}
+                alt="Фото-зона"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+            </div>
+            <a
+              href={CONTACT_INFO.galleryLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="md:col-span-2 rounded-[40px] overflow-hidden shadow-lg group bg-chocolate-dark hover:bg-chocolate-medium transition-colors h-64 md:h-auto flex flex-col items-center justify-center p-6 text-center"
+            >
+              <p className="text-white font-display italic text-5xl font-bold mb-3 group-hover:scale-105 transition-transform">
+                Смотреть больше
+              </p>
+              <div className="w-16 h-1 bg-chocolate-gold group-hover:w-32 transition-all"></div>
             </a>
           </div>
         </div>
       </section>
 
-      {/* Footer / Contacts */}
-      <footer id="contacts" className="bg-sand-900 text-sand-100 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-12 border-b border-sand-800 pb-12 mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <span className="font-serif text-2xl font-semibold tracking-wide text-white">История</span>
+      {/* CTA */}
+      <section className="py-24 text-center">
+        <div className="max-w-4xl mx-auto px-4 space-y-8">
+          <h2 className="font-display text-4xl md:text-6xl font-bold text-chocolate-dark italic">
+            Планируете провести важное <br /> мероприятие?
+          </h2>
+          <p className="text-xl text-chocolate-medium/70">
+            Мы будем счастливы, если вы доверите нам организацию вашего торжества. Поводов много —
+            праздник один!
+          </p>
+          <a
+            href={`tel:${CONTACT_INFO.phone.replace(/[^+\d]/g, "")}`}
+            className="inline-flex items-center gap-4 px-10 py-5 bg-chocolate-dark text-white rounded-full font-bold text-xl hover:bg-chocolate-medium transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-chocolate-dark/30"
+          >
+            Забронировать дату
+            <Phone size={24} />
+          </a>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-white py-20 border-t border-chocolate-dark/5">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+            <div className="space-y-6 text-center md:text-left">
+              <div className="flex items-center gap-4 justify-center md:justify-start">
+                <div className="flex flex-col">
+                  <span className="font-display text-2xl font-bold tracking-tighter text-chocolate-dark leading-none">
+                    ШОКОЛАД
+                  </span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-chocolate-light font-bold">
+                    Банкетный зал
+                  </span>
+                </div>
               </div>
-              <p className="text-sand-400 mb-6 max-w-sm">
-                Банкетный зал созданный для вашего комфорта. Вместимость до 140 персон.
+              <p className="max-w-xs text-chocolate-medium/60 text-sm leading-relaxed mx-auto md:mx-0">
+                Банкетный зал с душевной атмосферой в самом сердце Магнитогорска. Мы делаем ваши
+                праздники незабываемыми.
               </p>
             </div>
-            
-            <div>
-              <h3 className="text-white font-medium text-lg mb-6">Контакты</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-16 w-full md:w-auto">
               <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-                  <a href="https://yandex.ru/maps/org/istoriya/211532867610/?ll=58.978542%2C53.350369&z=17" target="_blank" rel="noopener noreferrer" className="text-sand-300 hover:text-white transition-colors">
-                    г. Магнитогорск,<br/> ул. Карла Маркса 232/1
-                  </a>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-5 h-5 text-accent shrink-0" />
-                  <a href="tel:+79048020590" className="text-sand-300 hover:text-white transition-colors">+7 (904) 802-05-90</a>
-                </div>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-chocolate-light">
+                  Контакты
+                </h4>
+                <ul className="space-y-3">
+                  <li>
+                    <a
+                      href={CONTACT_INFO.mapLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start gap-3 text-chocolate-dark hover:text-chocolate-light transition-colors group"
+                    >
+                      <MapPin size={18} className="mt-1 flex-shrink-0" />
+                      <span className="font-medium group-hover:underline underline-offset-4">
+                        {CONTACT_INFO.address}
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href={`tel:${CONTACT_INFO.phone.replace(/[^+\d]/g, "")}`}
+                      className="flex items-center gap-3 text-chocolate-dark hover:text-chocolate-light transition-colors group"
+                    >
+                      <Phone size={18} className="flex-shrink-0" />
+                      <span className="font-medium">{CONTACT_INFO.phone}</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-chocolate-light">
+                  Мы в соцсетях
+                </h4>
+                <a
+                  href={CONTACT_INFO.vkLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-6 py-3 bg-chocolate-cream rounded-2xl text-chocolate-dark font-bold hover:bg-chocolate-light/10 transition-all border border-chocolate-dark/5"
+                >
+                  <MessageCircle size={20} />
+                  ВКонтакте
+                </a>
               </div>
             </div>
-            
-            <div>
-              <h3 className="text-white font-medium text-lg mb-6">Мы в соцсетях</h3>
-              <div className="flex flex-col gap-4">
-                <a href="https://www.instagram.com/istoriya.zal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sand-300 hover:text-white transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-sand-800 flex items-center justify-center">
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M15.071 2.942C16.812 2.942 16.924 2.942 17.514 2.969C18.239 3.003 18.665 3.136 18.956 3.25C19.349 3.402 19.638 3.593 19.932 3.887C20.226 4.181 20.417 4.47 20.57 4.864C20.684 5.155 20.817 5.581 20.851 6.306C20.878 6.896 20.878 7.008 20.878 8.749V15.251C20.878 16.992 20.878 17.104 20.851 17.694C20.817 18.419 20.684 18.845 20.57 19.136C20.417 19.529 20.226 19.818 19.932 20.112C19.638 20.406 19.349 20.597 18.956 20.75C18.665 20.864 18.239 20.997 17.514 21.031C16.924 21.058 16.812 21.058 15.071 21.058H8.929C7.188 21.058 7.076 21.058 6.486 21.031C5.761 20.997 5.335 20.864 5.044 20.75C4.651 20.597 4.362 20.406 4.068 20.112C3.774 19.818 3.583 19.529 3.43 19.136C3.316 18.845 3.183 18.419 3.149 17.694C3.122 17.104 3.122 16.992 3.122 15.251V8.749C3.122 7.008 3.122 6.896 3.149 6.306C3.183 5.581 3.316 5.155 3.43 4.864C3.583 4.47 3.774 4.181 4.068 3.887C4.362 3.593 4.651 3.402 5.044 3.25C5.335 3.136 5.761 3.003 6.486 2.969C7.076 2.942 7.188 2.942 8.929 2.942H15.071ZM15.071 1.001H8.929C7.165 1.001 6.945 1.008 6.326 1.037C5.542 1.072 5.006 1.231 4.542 1.411C4.062 1.597 3.652 1.848 3.239 2.261C2.826 2.674 2.575 3.084 2.389 3.564C2.209 4.028 2.05 4.564 2.015 5.348C1.986 5.967 1.979 6.187 1.979 7.951V16.049C1.979 17.813 1.986 18.033 2.015 18.652C2.05 19.436 2.209 19.972 2.389 20.436C2.575 20.916 2.826 21.326 3.239 21.739C3.652 22.152 4.062 22.403 4.542 22.589C5.006 22.769 5.542 22.928 6.326 22.963C6.945 22.992 7.165 22.999 8.929 22.999H15.071C16.835 22.999 17.055 22.992 17.674 22.963C18.458 22.928 18.994 22.769 19.458 22.589C19.938 22.403 20.348 22.152 20.761 21.739C21.174 21.326 21.425 20.916 21.611 20.436C21.791 19.972 21.95 19.436 21.985 18.652C22.014 18.033 22.021 17.813 22.021 16.049V7.951C22.021 6.187 22.014 5.967 21.985 5.348C21.95 4.564 21.791 4.028 21.611 3.564C21.425 3.084 21.174 2.674 20.761 2.261C20.348 1.848 19.938 1.597 19.458 1.411C18.994 1.231 18.458 1.072 17.674 1.037C17.055 1.008 16.835 1.001 15.071 1.001Z"/><path d="M12 6.342V6.341C8.875 6.341 6.341 8.875 6.341 12C6.341 15.125 8.875 17.659 12 17.659C15.125 17.659 17.659 15.125 17.659 12C17.659 8.875 15.125 6.342 12 6.342ZM12 15.719C9.946 15.719 8.281 14.054 8.281 12C8.281 9.946 9.946 8.281 12 8.281C14.054 8.281 15.719 9.946 15.719 12C15.719 14.054 14.054 15.719 12 15.719Z"/><path d="M18.406 6.903C18.406 7.618 17.826 8.198 17.11 8.198C16.395 8.198 15.815 7.618 15.815 6.903C15.815 6.188 16.395 5.608 17.11 5.608C17.826 5.608 18.406 6.188 18.406 6.903Z"/></svg>
-                  </div>
-                  <span>Instagram</span>
-                </a>
-                <a href="https://vk.com/istoriya_zal" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sand-300 hover:text-white transition-colors">
-                  <div className="w-10 h-10 rounded-full bg-sand-800 flex items-center justify-center">
-                    <span className="font-bold font-serif text-sm">VK</span>
-                  </div>
-                  <span>ВКонтакте</span>
-                </a>
-              </div>
-            </div>
-            
           </div>
-          
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-sand-500">
-            <p>&copy; {new Date().getFullYear()} Банкетный зал «История».</p>
-            <p className="mt-2 md:mt-0">Магнитогорск, Россия</p>
+
+          <div className="mt-20 pt-10 border-t border-chocolate-dark/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-chocolate-medium/40 font-medium uppercase tracking-[0.2em]">
+            <p>&copy; {new Date().getFullYear()} Банкетный зал «Шоколад»</p>
+            <p>Все права защищены</p>
           </div>
         </div>
       </footer>
 
-      {/* Scroll to Top Button */}
       <AnimatePresence>
         {showScrollTop && (
           <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 20 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={scrollToTop}
-            className="fixed bottom-8 right-8 z-50 p-3 bg-accent text-white rounded-full shadow-lg shadow-accent/20 hover:bg-accent/90 transition-all focus:outline-none active:scale-95 cursor-pointer"
+            className="fixed bottom-8 right-8 z-[60] w-12 h-12 bg-chocolate-dark text-white rounded-full flex items-center justify-center shadow-2xl shadow-chocolate-dark/40 border border-white/10 backdrop-blur-sm hover:bg-chocolate-medium transition-colors"
             aria-label="Наверх"
           >
-            <ArrowUp className="w-6 h-6" />
+            <ArrowUp size={24} />
           </motion.button>
         )}
       </AnimatePresence>
