@@ -44,7 +44,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center gap-3">
             {/* If user uploaded the logo to standard path, we try to use it here. Otherwise fallback to text */}
-            <img src="/logoo.jpg" alt="История" className="h-10 w-auto object-contain rounded" onError={(e) => {
+            <img src="/logoo.png" alt="История" className="h-10 w-auto object-contain rounded" onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }} />
             <span className="font-serif text-2xl font-semibold tracking-wide text-sand-900">История</span>
